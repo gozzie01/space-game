@@ -1,0 +1,8 @@
+[package]
+name = "space-game"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pixels = "0.14.0"
+winit = "0.30.5"
