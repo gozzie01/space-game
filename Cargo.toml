@@ -2,7 +2,7 @@
 name = "SpaceEngine"
 version = "0.1.0"
 authors = ["Sam Gosden <s.j.gosden2@newcastle.ac.uk>"]
-edition = "2024"
+edition = "2021"
 
 [features]
 
