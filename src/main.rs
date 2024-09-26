@@ -1,3 +1,4 @@
+// if you name the crate SpaceEngine it for some reason runs at half speed, blame the rust compiler idek
 use pixels::wgpu::PresentMode;
 use pixels::{Error, Pixels, SurfaceTexture};
 use ultraviolet::DVec3;
@@ -93,7 +94,7 @@ fn main() -> Result<(), Error> {
         let size = LogicalSize::new(WIDTH as f64, HEIGHT as f64);
         let scaled_size = LogicalSize::new(WIDTH as f64 * 3.0, HEIGHT as f64 * 3.0);
         WindowBuilder::new()
-            .with_title("SpaceEngine")
+            .with_title("Space-Engine")
             .with_inner_size(scaled_size)
             .with_min_inner_size(size)
             .build(&event_loop)
