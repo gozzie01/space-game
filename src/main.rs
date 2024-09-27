@@ -1,4 +1,3 @@
-use std::io::Cursor;
 use std::vec;
 
 // if you name the crate SpaceEngine it for some reason runs at half speed, blame the rust compiler idek
@@ -8,7 +7,6 @@ use ultraviolet::Vec3;
 use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::EventLoop;
-use winit::keyboard::KeyCode;
 use winit::window::WindowBuilder;
 use winit_input_helper::WinitInputHelper;
 use std::sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}};
@@ -100,7 +98,6 @@ fn main() -> Result<(), Error> {
 
     let event_loop = EventLoop::new().unwrap();
     let bodies = Arc::new(Mutex::new(initialize_bodies()));
-    let mut render_bodies: Vec<Body> = initialize_bodies();
     let dt = 6900000.0; // Time step
 
     let window = {
@@ -148,7 +145,7 @@ fn main() -> Result<(), Error> {
             tx.send(()).unwrap(); // Unblock the worker thread if it's waiting
             elwt.exit();
         }
-        
+
         if let Event::WindowEvent {
             event: WindowEvent::RedrawRequested,
             ..
@@ -193,7 +190,7 @@ fn main() -> Result<(), Error> {
                     let mouse_win_coords = pixels.window_pos_to_pixel((mx, my)).unwrap();
                     println!("Mouse clicked at: {:?}", Vec3::new(mouse_win_coords.0 as f32 / 100.0 - 1.5, mouse_win_coords.1 as f32 / 100.0 - 1.5, 0.0));
                     let mut bodies = bodies.lock().unwrap();
-                    addBody(&mut bodies, Vec3::new(mouse_win_coords.0 as f32 / 100.0 - 1.5, mouse_win_coords.1 as f32 / 100.0 - 1.5, 0.0));
+                    add_body(&mut bodies, Vec3::new(mouse_win_coords.0 as f32 / 100.0 - 1.5, mouse_win_coords.1 as f32 / 100.0 - 1.5, 0.0));
                 }
             }
         }
@@ -202,7 +199,7 @@ fn main() -> Result<(), Error> {
     res.map_err(|e| Error::UserDefined(Box::new(e)))
 }
 
-fn addBody(bodies: &mut Vec<Body>, mouse_coords: Vec3) {
+fn add_body(bodies: &mut Vec<Body>, mouse_coords: Vec3) {
     bodies.append(&mut vec![Body {
         position: mouse_coords,
         velocity: Vec3::new(0.0, 0.0, 0.0), // km/s scaled down
