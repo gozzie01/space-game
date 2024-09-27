@@ -1,7 +1,7 @@
 // if you name the crate SpaceEngine it for some reason runs at half speed, blame the rust compiler idek
 use pixels::wgpu::PresentMode;
 use pixels::{Error, Pixels, SurfaceTexture};
-use ultraviolet::DVec3;
+use ultraviolet::Vec3;
 use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::EventLoop;
@@ -11,44 +11,44 @@ const WIDTH: u32 = 400;
 const HEIGHT: u32 = 300;
 
 struct Body {
-    position: DVec3,
-    velocity: DVec3,
-    mass: f64,
+    position: Vec3,
+    velocity: Vec3,
+    mass: f32,
 }
 
 fn initialize_bodies() -> Vec<Body> {
     vec![
         Body {
-            position: DVec3::new(0.0, 0.0, 0.0),
-            velocity: DVec3::new(0.0, 0.0, 0.0),
+            position: Vec3::new(0.0, 0.0, 0.0),
+            velocity: Vec3::new(0.0, 0.0, 0.0),
             mass: 1.0e30, // Solar mass
         },
         Body {
-            position: DVec3::new(1.1, 0.0, 0.0),
-            velocity: DVec3::new(0.0, 0.000000000000098, 0.0),
+            position: Vec3::new(1.1, 0.0, 0.0),
+            velocity: Vec3::new(0.0, 0.000000000000098, 0.0),
             mass: 1.0e30, // Solar mass
         },
         Body {
-            position: DVec3::new(1.0, 0.0, 0.0),   // 1 AU
-            velocity: DVec3::new(0.0, 0.000000000198, 0.0), // km/s scaled down
+            position: Vec3::new(1.0, 0.0, 0.0),   // 1 AU
+            velocity: Vec3::new(0.0, 0.000000000198, 0.0), // km/s scaled down
             mass: 5.972e24,                        // Earth mass
         },
         Body {
-            position: DVec3::new(-1.0, 0.0, 0.0),   // 1 AU
-            velocity: DVec3::new(0.0, -0.000000000198, 0.0), // km/s scaled down
+            position: Vec3::new(-1.0, 0.0, 0.0),   // 1 AU
+            velocity: Vec3::new(0.0, -0.000000000198, 0.0), // km/s scaled down
             mass: 5.972e24,                        // Earth mass
         },
     ]
 }
 
-fn compute_forces(bodies: &Vec<Body>) -> Vec<DVec3> {
-    let mut forces = vec![DVec3::zero(); bodies.len()];
+fn compute_forces(bodies: &Vec<Body>) -> Vec<Vec3> {
+    let mut forces = vec![Vec3::zero(); bodies.len()];
     for i in 0..bodies.len() {
         for j in (i + 1)..bodies.len() {
             let direction = bodies[j].position - bodies[i].position;
             let distance = direction.mag()  + 1e-10; // Avoid division by zero
             let force_magnitude = ((bodies[i].mass * bodies[j].mass) / (distance * distance)).min(1e5); // Clamp force
-            let force: DVec3 = direction.normalized() * force_magnitude;
+            let force: Vec3 = direction.normalized() * force_magnitude;
             forces[i] += force;
             forces[j] -= force; // Newton's third law: equal and opposite force
         }
@@ -56,7 +56,7 @@ fn compute_forces(bodies: &Vec<Body>) -> Vec<DVec3> {
     forces
 }
 
-fn update_bodies(bodies: &mut Vec<Body>, forces: Vec<DVec3>, dt: f64) {
+fn update_bodies(bodies: &mut Vec<Body>, forces: Vec<Vec3>, dt: f32) {
     for (body, force) in bodies.iter_mut().zip(forces.iter()) {
         let acceleration = *force / body.mass;
         body.velocity += acceleration * dt;
@@ -115,11 +115,9 @@ fn main() -> Result<(), Error> {
 
         {
             let frame = pixels.frame_mut();
-            for p in frame.chunks_mut(4) {
-                p[0] = 0;
-                p[1] = 0;
-                p[2] = 0;
-                p[3] = 255;
+            //set it to black
+            for i in 0..frame.len() {
+                frame[i] = 0;
             }
             //set the closest pixel to each body to white, 0,0 is centre 1.5 is far right -1.5 is far left, 1.5 is top, -1.5 is bottom
             for body in bodies.iter() {
