@@ -1,13 +1,9 @@
 use crate::CenterOfMass;
 use bevy::prelude::*;
-use bevy::{
-    core_pipeline::{
+use bevy::core_pipeline::{
         bloom::*,
         tonemapping::Tonemapping,
-    },
-    prelude::*,
-    sprite::MaterialMesh2dBundle,
-};
+    };
 
 pub fn update_camera_system(
     center_of_mass: Res<CenterOfMass>,

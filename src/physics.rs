@@ -29,7 +29,7 @@ pub fn calculate_center_of_mass_system(
     }
 }
 
-pub fn compute_forces_tuple(bodies: &Vec<(Position, Velocity, Mass)>) -> Vec<DVec2> {
+pub fn compute_forces(bodies: &Vec<(Position, Velocity, Mass)>) -> Vec<DVec2> {
     let mut forces = vec![DVec2::zero(); bodies.len()];
     for i in 0..bodies.len() {
         for j in (i + 1)..bodies.len() {
@@ -44,7 +44,7 @@ pub fn compute_forces_tuple(bodies: &Vec<(Position, Velocity, Mass)>) -> Vec<DVe
     forces
 }
 
-pub fn update_bodies_tuple(bodies: &mut Vec<(Position, Velocity, Mass)>, forces: Vec<DVec2>, dt: f64) {
+pub fn update_bodies(bodies: &mut Vec<(Position, Velocity, Mass)>, forces: Vec<DVec2>, dt: f64) {
     for (body, force) in bodies.iter_mut().zip(forces.iter()) {
         let acceleration = *force / body.2 .0;
         body.1 .0 += acceleration * dt;

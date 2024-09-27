@@ -120,8 +120,8 @@ fn update_bodies_system(
         (Position(pos.0), Velocity(vel.0), Mass(mass.0))
     }).collect();
 
-    let forces = compute_forces_tuple(&bodies);
-    update_bodies_tuple(&mut bodies, forces, dt * 1000000.0);
+    let forces = compute_forces(&bodies);
+    update_bodies(&mut bodies, forces, dt * 1000000.0);
 
     for ((mut pos, mut vel, _), body) in query.iter_mut().zip(bodies.iter()) {
         pos.0 = body.0.0;
