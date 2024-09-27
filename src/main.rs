@@ -38,34 +38,34 @@ fn initialize_bodies() -> Vec<Body> {
             position: DVec2::new(0.0, 0.0),
             velocity: DVec2::new(0.0, 0.0),
             radius: 4.0,
-            mass: 2.0e30, // Solar mass
+            mass: 2.0e30,                          // Solar mass
         },
         Body {
             _name: "Sun2".to_string(),
             position: DVec2::new(4e11, 0.0),
             velocity: DVec2::new(0.0, 1e4),
             radius: 4.0,
-            mass: 2.0e30, // Solar mass
+            mass: 2.0e30,                          // Solar mass
         },
         Body {
             _name: "Earth".to_string(),
             position: DVec2::new(1.496e11, 0.0),   // 1 AU
-            velocity: DVec2::new(0.0, 30000.0),
-            radius: 2.0, // km/s scaled down
+            velocity: DVec2::new(0.0, 30000.0),    // km/s scaled down
+            radius: 2.0, 
             mass: 5.972e24,                        // Earth mass
         },
         Body {
             _name: "Venus".to_string(),
             position: DVec2::new(1.08e11, 0.0),   // venus
-            velocity: DVec2::new(0.0, 35000.0),
-            radius: 2.0, // km/s scaled down
+            velocity: DVec2::new(0.0, 35000.0),   // km/s scaled down
+            radius: 2.0, 
             mass: 4.868e24,                        // Venus mass
         },
         Body {
             _name: "Mars".to_string(),
             position: DVec2::new(2.28e11, 0.0),   // mars
-            velocity: DVec2::new(0.0, 24000.0),
-            radius: 2.0, // km/s scaled down
+            velocity: DVec2::new(0.0, 24000.0),   // km/s scaled down
+            radius: 2.0, 
             mass: 6.42e23,                        // mars mass
         },
     ]
@@ -94,6 +94,7 @@ fn setup(
     commands.insert_resource(CenterOfMass::default());
 
     let bodies = initialize_bodies();
+    
     for body in bodies {
         let radius = body.radius;
         commands.spawn((
@@ -102,10 +103,9 @@ fn setup(
             Mass(body.mass),
             MaterialMesh2dBundle {
                 mesh: meshes.add(Circle { radius }).into(),
-                material: materials.add(ColorMaterial::from(Color::WHITE)),
+                material: materials.add(Color::srgb(2.0 * radius, 0.0, 7.5)),
                 transform: Transform::from_translation(Vec3::new(body.position.x as f32, body.position.y as f32, 0.0)),
-                ..default()
-            },
+                ..default()}
         ));
     }
 }
