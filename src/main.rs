@@ -4,8 +4,10 @@ mod physics;
 mod render;
 mod camera;
 use std::vec;
+use bevy::window::PresentMode;
 use input::*;
 use camera::*;
+use iyes_perf_ui::prelude::*;
 use physics::*;
 use render::*;
 use bevy::sprite::MaterialMesh2dBundle;
@@ -42,29 +44,29 @@ fn initialize_bodies() -> Vec<Body> {
         },
         Body {
             _name: "Sun2".to_string(),
-            position: DVec2::new(4e11, 0.0),
-            velocity: DVec2::new(0.0, 1e4),
+            position: DVec2::new(5e10, 0.0),
+            velocity: DVec2::new(0.0, 7e4),
             radius: 4.0,
             mass: 2.0e30,                          // Solar mass
         },
         Body {
             _name: "Earth".to_string(),
-            position: DVec2::new(1.496e11, 0.0),   // 1 AU
-            velocity: DVec2::new(0.0, 30000.0),    // km/s scaled down
+            position: DVec2::new(2.496e11, 0.0),   // 1 AU
+            velocity: DVec2::new(0.0, 70000.0),    // km/s scaled down
             radius: 2.0, 
             mass: 5.972e24,                        // Earth mass
         },
         Body {
             _name: "Venus".to_string(),
-            position: DVec2::new(1.08e11, 0.0),   // venus
-            velocity: DVec2::new(0.0, 35000.0),   // km/s scaled down
+            position: DVec2::new(2.08e11, 0.0),   // venus
+            velocity: DVec2::new(0.0, 75000.0),   // km/s scaled down
             radius: 2.0, 
             mass: 4.868e24,                        // Venus mass
         },
         Body {
             _name: "Mars".to_string(),
-            position: DVec2::new(2.28e11, 0.0),   // mars
-            velocity: DVec2::new(0.0, 24000.0),   // km/s scaled down
+            position: DVec2::new(3.28e11, 0.0),   // mars
+            velocity: DVec2::new(0.0, 64000.0),   // km/s scaled down
             radius: 2.0, 
             mass: 6.42e23,                        // mars mass
         },
@@ -74,8 +76,17 @@ fn initialize_bodies() -> Vec<Body> {
 fn main() {
     let mut app = App::new();
     app.add_plugins((
-        DefaultPlugins,
+        DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                present_mode: PresentMode::Immediate,
+                ..default()
+            }),
+            ..default()
+        }),
     ))
+    .add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin)
+
+    .add_plugins(PerfUiPlugin)
     .add_systems(Startup, setup);
     app.add_systems(Update, update_bodies_system);
     app.add_systems(Update, render_bodies_system);
@@ -98,6 +109,12 @@ fn setup(
     for body in bodies {
         let radius = body.radius;
         commands.spawn((
+            PerfUiRoot::default(),
+            PerfUiEntryFPS::default(),
+            PerfUiEntryClock::default(),
+            // ...
+         ));
+        commands.spawn((
             Position(body.position),
             Velocity(body.velocity),
             Mass(body.mass),
@@ -115,7 +132,6 @@ fn update_bodies_system(
     time: Res<Time>,
 ) {
     let dt = time.delta_seconds_f64();
-    println!("dt: {}", dt);
     let mut bodies: Vec<(Position, Velocity, Mass)> = query.iter_mut().map(|(pos, vel, mass)| {
         (Position(pos.0), Velocity(vel.0), Mass(mass.0))
     }).collect();
