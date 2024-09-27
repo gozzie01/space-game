@@ -1,13 +1,9 @@
 use crate::CenterOfMass;
 use bevy::prelude::*;
-use bevy::{
-    core_pipeline::{
+use bevy::core_pipeline::{
         bloom::*,
         tonemapping::Tonemapping,
-    },
-    prelude::*,
-    sprite::MaterialMesh2dBundle,
-};
+    };
 
 pub fn update_camera_system(
     center_of_mass: Res<CenterOfMass>,
@@ -29,7 +25,7 @@ pub fn intialize_camera(commands: &mut Commands) {
             ..default()
         },
         BloomSettings {
-            intensity: 0.0,
+            intensity: 0.15,
             low_frequency_boost: 0.7,
             low_frequency_boost_curvature: 0.95,
             high_pass_frequency: 1.0,
