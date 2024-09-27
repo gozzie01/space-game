@@ -11,10 +11,13 @@ use winit::event_loop::EventLoop;
 use winit::keyboard::KeyCode;
 use winit::window::WindowBuilder;
 use winit_input_helper::WinitInputHelper;
-
+use std::sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}};
+use std::thread;
+use std::sync::mpsc::{self, Sender, Receiver};
 const WIDTH: u32 = 400;
 const HEIGHT: u32 = 300;
 
+#[derive(Clone)]
 struct Body {
     position: Vec3,
     velocity: Vec3,
@@ -91,12 +94,13 @@ fn main() {
 
 fn main() -> Result<(), Error> {
     // Create an event loop
-    let event_loop = EventLoop::new().unwrap();
 
     // Create input handler
     let mut input = WinitInputHelper::new();
 
-    let mut bodies = initialize_bodies();
+    let event_loop = EventLoop::new().unwrap();
+    let bodies = Arc::new(Mutex::new(initialize_bodies()));
+    let mut render_bodies: Vec<Body> = initialize_bodies();
     let dt = 6900000.0; // Time step
 
     let window = {
@@ -116,20 +120,48 @@ fn main() -> Result<(), Error> {
     };
     pixels.set_present_mode(PresentMode::Immediate);
 
+    let (tx, rx): (Sender<()>, Receiver<()>) = mpsc::channel();
+    let bodies_clone = Arc::clone(&bodies);
+    let running = Arc::new(AtomicBool::new(true));
+    let running_clone = Arc::clone(&running);
+
+    thread::spawn(move || {
+        while running_clone.load(Ordering::SeqCst) {
+            // Wait for the signal from the main thread
+            if rx.recv().is_err() {
+                break;
+            }
+
+            let mut bodies = bodies_clone.lock().unwrap();
+            let forces = compute_forces(&bodies);
+            update_bodies(&mut bodies, forces, dt);
+        }
+    });
+
     let res = event_loop.run(|event, elwt| {
+        if let Event::WindowEvent {
+            event: WindowEvent::CloseRequested,
+            ..
+        } = event
+        {
+            running.store(false, Ordering::SeqCst);
+            tx.send(()).unwrap(); // Unblock the worker thread if it's waiting
+            elwt.exit();
+        }
+        
         if let Event::WindowEvent {
             event: WindowEvent::RedrawRequested,
             ..
         } = event
-        
         {
             let frame = pixels.frame_mut();
             //set it to black
-            for i in 0..frame.len() {
-                frame[i] = 0;
-            }
+            frame.fill(0);
+            let bodies = bodies.lock().unwrap();
+            let render_bodies = bodies.clone();
+            tx.send(()).unwrap();
             //set the closest pixel to each body to white, 0,0 is centre 1.5 is far right -1.5 is far left, 1.5 is top, -1.5 is bottom
-            for body in bodies.iter() {
+            for body in render_bodies.iter() {
                 let x = (body.position.x + 1.5) * 100.0;
                 let y = (body.position.y + 1.5) * 100.0;
                 let x = x as usize;
@@ -149,23 +181,18 @@ fn main() -> Result<(), Error> {
             }
         }
         if let Event::AboutToWait = event {
-            let forces = compute_forces(&bodies);
-            update_bodies(&mut bodies, forces, dt);
             // Request a redraw
             window.request_redraw();
         }
 
         //Input Handling
         if input.update(&event) {
-            if input.close_requested() {  
-                elwt.exit();
-                return;
-            }
             if input.mouse_pressed(0) {
                 if let Some((mx, my)) = input.cursor() {
                     //println!("Mouse clicked at: {:?}", Vec3::new((mx / 100.0) -1.5, (my / 100.0) -1.5, 0.0));
                     let mouse_win_coords = pixels.window_pos_to_pixel((mx, my)).unwrap();
                     println!("Mouse clicked at: {:?}", Vec3::new(mouse_win_coords.0 as f32 / 100.0 - 1.5, mouse_win_coords.1 as f32 / 100.0 - 1.5, 0.0));
+                    let mut bodies = bodies.lock().unwrap();
                     addBody(&mut bodies, Vec3::new(mouse_win_coords.0 as f32 / 100.0 - 1.5, mouse_win_coords.1 as f32 / 100.0 - 1.5, 0.0));
                 }
             }
