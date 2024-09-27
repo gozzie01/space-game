@@ -1,9 +1,11 @@
 use std::vec;
+use bevy::input::mouse::MouseButtonInput;
 use bevy::sprite::{Wireframe2dConfig, Wireframe2dPlugin};
 use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
+use bevy::window::Window;
 
 // if you name the crate SpaceEngine it for some reason runs at half speed, blame the rust compiler idek
 use ultraviolet::DVec2;
@@ -42,6 +44,13 @@ fn initialize_bodies() -> Vec<Body> {
             name: "Sun".to_string(),
             position: DVec2::new(0.0, 0.0),
             velocity: DVec2::new(0.0, 0.0),
+            radius: 4.0,
+            mass: 2.0e30, // Solar mass
+        },
+        Body {
+            name: "Sun2".to_string(),
+            position: DVec2::new(4e11, 0.0),
+            velocity: DVec2::new(0.0, 1e4),
             radius: 4.0,
             mass: 2.0e30, // Solar mass
         },
@@ -126,6 +135,7 @@ fn main() {
     app.add_systems(Update, render_bodies_system);
     app.add_systems(Update, calculate_center_of_mass_system);
     app.add_systems(Update, update_camera_system);
+    app.add_systems(Update, mouse_system);
     app.run();
 }
 
@@ -219,5 +229,20 @@ fn update_camera_system(
 ) {
     for mut transform in query.iter_mut() {
         transform.translation = Vec3::new((center_of_mass.0.x / 1e9) as f32, (center_of_mass.0.y / 1e9) as f32, transform.translation.z);
+    }
+}
+fn mouse_system(
+    windows: Query<&Window>,
+    camera_q: Query<(&Camera, &GlobalTransform), With<Camera>>,
+    mouse_button_input: Res<ButtonInput<MouseButton>>,
+) {
+    let window = windows.single();
+    let (camera, camera_transform) = camera_q.single();
+
+    if let Some(world_position) = window
+        .cursor_position()
+        .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
+    {
+        println!("Mouse: {:?}", mouse_button_input.get_pressed().collect::<Vec<_>>());
     }
 }
