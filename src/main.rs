@@ -1,3 +1,6 @@
+use std::io::Cursor;
+use std::vec;
+
 // if you name the crate SpaceEngine it for some reason runs at half speed, blame the rust compiler idek
 use pixels::wgpu::PresentMode;
 use pixels::{Error, Pixels, SurfaceTexture};
@@ -5,7 +8,9 @@ use ultraviolet::Vec3;
 use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::EventLoop;
+use winit::keyboard::KeyCode;
 use winit::window::WindowBuilder;
+use winit_input_helper::WinitInputHelper;
 
 const WIDTH: u32 = 400;
 const HEIGHT: u32 = 300;
@@ -87,6 +92,10 @@ fn main() {
 fn main() -> Result<(), Error> {
     // Create an event loop
     let event_loop = EventLoop::new().unwrap();
+
+    // Create input handler
+    let mut input = WinitInputHelper::new();
+
     let mut bodies = initialize_bodies();
     let dt = 6900000.0; // Time step
 
@@ -112,7 +121,7 @@ fn main() -> Result<(), Error> {
             event: WindowEvent::RedrawRequested,
             ..
         } = event
-
+        
         {
             let frame = pixels.frame_mut();
             //set it to black
@@ -145,6 +154,31 @@ fn main() -> Result<(), Error> {
             // Request a redraw
             window.request_redraw();
         }
+
+        //Input Handling
+        if input.update(&event) {
+            if input.close_requested() {  
+                elwt.exit();
+                return;
+            }
+            if input.mouse_pressed(0) {
+                if let Some((mx, my)) = input.cursor() {
+                    //println!("Mouse clicked at: {:?}", Vec3::new((mx / 100.0) -1.5, (my / 100.0) -1.5, 0.0));
+                    let mouse_win_coords = pixels.window_pos_to_pixel((mx, my)).unwrap();
+                    println!("Mouse clicked at: {:?}", Vec3::new(mouse_win_coords.0 as f32 / 100.0 - 1.5, mouse_win_coords.1 as f32 / 100.0 - 1.5, 0.0));
+                    addBody(&mut bodies, Vec3::new(mouse_win_coords.0 as f32 / 100.0 - 1.5, mouse_win_coords.1 as f32 / 100.0 - 1.5, 0.0));
+                }
+            }
+        }
+
     });
     res.map_err(|e| Error::UserDefined(Box::new(e)))
+}
+
+fn addBody(bodies: &mut Vec<Body>, mouse_coords: Vec3) {
+    bodies.append(&mut vec![Body {
+        position: mouse_coords,
+        velocity: Vec3::new(0.0, 0.0, 0.0), // km/s scaled down
+        mass: 5.972e24, // Earth mass
+    }]);
 }
