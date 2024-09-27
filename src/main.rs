@@ -116,41 +116,17 @@ fn update_bodies_system(
 ) {
     let dt = time.delta_seconds_f64();
     println!("dt: {}", dt);
-    let mut bodies: Vec<Body> = query.iter_mut().map(|(pos, vel, mass)| Body {
-        _name: "".to_string(),
-        position: pos.0,
-        velocity: vel.0,
-        radius: 2.0,
-        mass: mass.0,
+    let mut bodies: Vec<(Position, Velocity, Mass)> = query.iter_mut().map(|(pos, vel, mass)| {
+        (Position(pos.0), Velocity(vel.0), Mass(mass.0))
     }).collect();
 
-    let forces = compute_forces(&bodies);
-    update_bodies(&mut bodies, forces, dt * 1000000.0);
+    let forces = compute_forces_tuple(&bodies);
+    update_bodies_tuple(&mut bodies, forces, dt * 1000000.0);
 
     for ((mut pos, mut vel, _), body) in query.iter_mut().zip(bodies.iter()) {
-        pos.0 = body.position;
-        vel.0 = body.velocity;
+        pos.0 = body.0.0;
+        vel.0 = body.1.0;
     }
 }
 
 
-
-fn _test() {
-    let start = std::time::Instant::now();
-    let mut bodies = initialize_bodies();
-    let dt = 69000000.0; // Time step
-    for body in bodies.iter() {
-        println!("{:?}", body.position);
-    }
-    for _ in 0..10 {
-        let forces = compute_forces(&bodies);
-        update_bodies(&mut bodies, forces, dt);
-        // Optionally, print or visualize the positions of the bodies
-
-        for body in bodies.iter() {
-            println!("{:?}", body.position);
-        }
-    }
-    let duration = start.elapsed();
-    println!("Time elapsed in computation is: {:?}", duration);
-}
