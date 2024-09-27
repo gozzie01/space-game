@@ -1,27 +1,40 @@
 use std::vec;
+use bevy::sprite::{Wireframe2dConfig, Wireframe2dPlugin};
+use bevy::{
+    prelude::*,
+    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
+};
 
 // if you name the crate SpaceEngine it for some reason runs at half speed, blame the rust compiler idek
-use pixels::wgpu::PresentMode;
-use pixels::{Error, Pixels, SurfaceTexture};
 use ultraviolet::DVec2;
-use winit::dpi::LogicalSize;
-use winit::event::{Event, WindowEvent};
-use winit::event_loop::EventLoop;
-use winit::window::WindowBuilder;
-use winit_input_helper::WinitInputHelper;
-use std::sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}};
-use std::thread;
-use std::sync::mpsc::{self, Sender, Receiver};
-const WIDTH: u32 = 400;
-const HEIGHT: u32 = 300;
 
 #[derive(Clone)]
 struct Body {
     name: String,
     position: DVec2,
     velocity: DVec2,
+    radius: f32,
     mass: f64,
 }
+
+#[derive(Component)]
+struct Position(DVec2);
+
+#[derive(Component)]
+struct Velocity(DVec2);
+
+#[derive(Component)]
+struct Mass(f64);
+
+#[derive(Component, Resource)]
+struct CenterOfMass(DVec2);
+
+impl Default for CenterOfMass {
+    fn default() -> Self {
+        CenterOfMass(DVec2::zero())
+    }
+}
+
 
 fn initialize_bodies() -> Vec<Body> {
     vec![
@@ -29,19 +42,29 @@ fn initialize_bodies() -> Vec<Body> {
             name: "Sun".to_string(),
             position: DVec2::new(0.0, 0.0),
             velocity: DVec2::new(0.0, 0.0),
+            radius: 4.0,
             mass: 2.0e30, // Solar mass
         },
         Body {
             name: "Earth".to_string(),
             position: DVec2::new(1.496e11, 0.0),   // 1 AU
-            velocity: DVec2::new(0.0, 3670000000.0), // km/s scaled down
+            velocity: DVec2::new(0.0, 30000.0),
+            radius: 2.0, // km/s scaled down
             mass: 5.972e24,                        // Earth mass
         },
         Body {
             name: "Venus".to_string(),
             position: DVec2::new(1.08e11, 0.0),   // venus
-            velocity: DVec2::new(0.0, 4260000000.0), // km/s scaled down
+            velocity: DVec2::new(0.0, 35000.0),
+            radius: 2.0, // km/s scaled down
             mass: 4.868e24,                        // Venus mass
+        },
+        Body {
+            name: "Mars".to_string(),
+            position: DVec2::new(2.28e11, 0.0),   // mars
+            velocity: DVec2::new(0.0, 24000.0),
+            radius: 2.0, // km/s scaled down
+            mass: 6.42e23,                        // mars mass
         },
     ]
 }
@@ -52,7 +75,7 @@ fn compute_forces(bodies: &Vec<Body>) -> Vec<DVec2> {
         for j in (i + 1)..bodies.len() {
             let direction = bodies[j].position - bodies[i].position;
             let distance = direction.mag()   + 100.0; // Avoid division by zero
-            let force_magnitude = (bodies[i].mass * bodies[j].mass) / (distance * distance); // Clamp force
+            let force_magnitude = (6.6743e-11 * (bodies[i].mass * bodies[j].mass)) / (distance * distance); // Clamp force
             let force: DVec2 = direction.normalized() * force_magnitude ;
             forces[i] += force;
             forces[j] -= force; // Newton's third law: equal and opposite force
@@ -88,130 +111,113 @@ fn main() {
     }
     let duration = start.elapsed();
     println!("Time elapsed in computation is: {:?}", duration);
-}*/
+}
+*/
 
-fn main() -> Result<(), Error> {
-    // Create an event loop
-
-    // Create input handler
-    let mut input = WinitInputHelper::new();
-
-    let event_loop = EventLoop::new().unwrap();
-    let bodies = Arc::new(Mutex::new(initialize_bodies()));
-    let dt = 0.01; // Time step
-
-    let window = {
-        let size = LogicalSize::new(WIDTH as f64, HEIGHT as f64);
-        let scaled_size = LogicalSize::new(WIDTH as f64 * 3.0, HEIGHT as f64 * 3.0);
-        WindowBuilder::new()
-            .with_title("Space-Engine")
-            .with_inner_size(scaled_size)
-            .with_min_inner_size(size)
-            .build(&event_loop)
-            .unwrap()
-    };
-    let mut pixels = {
-        let window_size = window.inner_size();
-        let surface_texture = SurfaceTexture::new(window_size.width, window_size.height, &window);
-        Pixels::new(WIDTH, HEIGHT, surface_texture)?
-    };
-    pixels.set_present_mode(PresentMode::Immediate);
-
-    let (tx, rx): (Sender<()>, Receiver<()>) = mpsc::channel();
-    let bodies_clone = Arc::clone(&bodies);
-    let running = Arc::new(AtomicBool::new(true));
-    let running_clone = Arc::clone(&running);
-
-    thread::spawn(move || {
-        while running_clone.load(Ordering::SeqCst) {
-            // Wait for the signal from the main thread
-            if rx.recv().is_err() {
-                break;
-            }
-
-            let mut bodies = bodies_clone.lock().unwrap();
-            let forces = compute_forces(&bodies);
-            update_bodies(&mut bodies, forces, dt);
-        }
-    });
-
-    let res = event_loop.run(|event, elwt| {
-        if let Event::WindowEvent {
-            event: WindowEvent::CloseRequested,
-            ..
-        } = event
-        {
-            running.store(false, Ordering::SeqCst);
-            tx.send(()).unwrap(); // Unblock the worker thread if it's waiting
-            elwt.exit();
-        }
-
-        if let Event::WindowEvent {
-            event: WindowEvent::RedrawRequested,
-            ..
-        } = event
-        {
-            let frame = pixels.frame_mut();
-            //set it to black
-            frame.fill(0);
-            let bodies = bodies.lock().unwrap();
-            let render_bodies = bodies.clone();
-            tx.send(()).unwrap();
-            //set the closest pixel to each body to white, 0,0 is centre 1.5 is far right -1.5 is far left, 1.5 is top, -1.5 is bottom
-            for body in render_bodies.iter() {
-                let x = (body.position.x/1.5e11 + 1.5) * 100.0;
-                let y = (body.position.y/1.5e11 + 1.5) * 100.0;
-                let x = x as usize;
-                let y = y as usize;
-                let i = (x + y * WIDTH as usize) * 4;
-                if i < frame.len() {
-                    frame[i] = 255;
-                    frame[i + 1] = 255;
-                    frame[i + 2] = 255;
-                    frame[i + 3] = 255;
-                }
-            }
-            if let Err(err) = pixels.render() {
-                println!("pixels.render, {0}", err.to_string());
-                elwt.exit();
-                return;
-            }
-        }
-        if let Event::AboutToWait = event {
-            // Request a redraw
-            window.request_redraw();
-        }
-
-        //Input Handling
-        if input.update(&event) {
-            if input.mouse_pressed(0) {
-                if let Some((mx, my)) = input.cursor() {
-                    //println!("Mouse clicked at: {:?}", DVec2::new((mx / 100.0) -1.5, (my / 100.0) -1.5, 0.0));
-                    let mouse_win_coords = pixels.window_pos_to_pixel((mx, my)).unwrap();
-                    println!("Mouse clicked at: {:?}", DVec2::new(mouse_win_coords.0 as f64 / 100.0 - 1.5, mouse_win_coords.1 as f64 / 100.0 - 1.5));
-                    let mut bodies = bodies.lock().unwrap();
-                    add_body(&mut bodies, DVec2::new((mouse_win_coords.0 as f64 / 100.0 - 1.5)*1.5e11, (mouse_win_coords.1 as f64 / 100.0 - 1.5)*1.5e11));
-                }
-            }
-            if input.key_pressed(winit::keyboard::KeyCode::Space) {
-                let bodies = bodies.lock().unwrap();
-                //print positions of all bodies
-                for body in bodies.iter() {
-                    println!("{:?}", body.name);
-                    println!("{:?}", body.position);
-                }
-            }
-        }
-
-    });
-    res.map_err(|e| Error::UserDefined(Box::new(e)))
+fn main() {
+    let mut bodies = initialize_bodies();
+    let mut app = App::new();
+    app.add_plugins((
+        DefaultPlugins,
+        Wireframe2dPlugin,
+    ))
+    .add_systems(Startup, setup);
+    app.add_systems(Update, update_bodies_system);
+    app.add_systems(Update, render_bodies_system);
+    app.add_systems(Update, calculate_center_of_mass_system);
+    app.add_systems(Update, update_camera_system);
+    app.run();
 }
 
-fn add_body(bodies: &mut Vec<Body>, mouse_coords: DVec2) {
-    bodies.append(&mut vec![Body {
-        name: "Custom".to_string(),
-        position: mouse_coords,
-        velocity: DVec2::new(1e9, 1e9), // km/s scaled down
-        mass: 5.972e24, // Earth mass
-    }]);
+const X_EXTENT: f32 = 900.;
+
+fn setup(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    commands.spawn(Camera2dBundle::default());
+    commands.insert_resource(CenterOfMass::default());
+
+    let bodies = initialize_bodies();
+    for body in bodies {
+        let radius = body.radius;
+        commands.spawn((
+            Position(body.position),
+            Velocity(body.velocity),
+            Mass(body.mass),
+            MaterialMesh2dBundle {
+                mesh: meshes.add(Circle { radius }).into(),
+                material: materials.add(ColorMaterial::from(Color::WHITE)),
+                transform: Transform::from_translation(Vec3::new(body.position.x as f32, body.position.y as f32, 0.0)),
+                ..default()
+            },
+        ));
+    }
+}
+
+fn update_bodies_system(
+    mut query: Query<(&mut Position, &mut Velocity, &Mass)>,
+    time: Res<Time>,
+) {
+    let dt = time.delta_seconds_f64();
+    println!("dt: {}", dt);
+    let mut bodies: Vec<Body> = query.iter_mut().map(|(pos, vel, mass)| Body {
+        name: "".to_string(),
+        position: pos.0,
+        velocity: vel.0,
+        radius: 2.0,
+        mass: mass.0,
+    }).collect();
+
+    let forces = compute_forces(&bodies);
+    update_bodies(&mut bodies, forces, dt * 1000000.0);
+
+    for ((mut pos, mut vel, _), body) in query.iter_mut().zip(bodies.iter()) {
+        pos.0 = body.position;
+        vel.0 = body.velocity;
+    }
+}
+
+fn render_bodies_system(
+    mut query: Query<(&Position, &mut Transform)>,
+) {
+    for (pos, mut transform) in query.iter_mut() {
+        transform.translation = Vec3::new((pos.0.x / 1e9) as f32, (pos.0.y / 1e9) as f32, 0.0);
+    }
+}
+
+fn toggle_wireframe(
+    mut wireframe_config: ResMut<Wireframe2dConfig>,
+    keyboard: Res<ButtonInput<KeyCode>>,
+) {
+    if keyboard.just_pressed(KeyCode::Space) {
+        wireframe_config.global = !wireframe_config.global;
+    }
+}
+
+fn calculate_center_of_mass_system(
+    query: Query<(&Position, &Mass)>,
+    mut center_of_mass: ResMut<CenterOfMass>,
+) {
+    let mut total_mass = 0.0;
+    let mut weighted_position_sum = DVec2::zero();
+
+    for (pos, mass) in query.iter() {
+        total_mass += mass.0;
+        weighted_position_sum += pos.0 * mass.0;
+    }
+
+    if total_mass > 0.0 {
+        center_of_mass.0 = weighted_position_sum / total_mass;
+    }
+}
+
+fn update_camera_system(
+    center_of_mass: Res<CenterOfMass>,
+    mut query: Query<&mut Transform, With<Camera>>,
+) {
+    for mut transform in query.iter_mut() {
+        transform.translation = Vec3::new((center_of_mass.0.x / 1e9) as f32, (center_of_mass.0.y / 1e9) as f32, transform.translation.z);
+    }
 }
