@@ -29,21 +29,6 @@ pub fn calculate_center_of_mass_system(
     }
 }
 
-pub fn compute_forces(bodies: &Vec<Body>) -> Vec<DVec2> {
-    let mut forces = vec![DVec2::zero(); bodies.len()];
-    for i in 0..bodies.len() {
-        for j in (i + 1)..bodies.len() {
-            let direction = bodies[j].position - bodies[i].position;
-            let distance = direction.mag()   + 100.0; // Avoid division by zero
-            let force_magnitude = (6.6743e-11 * (bodies[i].mass * bodies[j].mass)) / (distance * distance); // Clamp force
-            let force: DVec2 = direction.normalized() * force_magnitude ;
-            forces[i] += force;
-            forces[j] -= force; // Newton's third law: equal and opposite force
-        }
-    }
-    forces
-}
-
 pub fn compute_forces_tuple(bodies: &Vec<(Position, Velocity, Mass)>) -> Vec<DVec2> {
     let mut forces = vec![DVec2::zero(); bodies.len()];
     for i in 0..bodies.len() {
@@ -57,15 +42,6 @@ pub fn compute_forces_tuple(bodies: &Vec<(Position, Velocity, Mass)>) -> Vec<DVe
         }
     }
     forces
-}
-
-pub fn update_bodies(bodies: &mut Vec<Body>, forces: Vec<DVec2>, dt: f64) {
-    for (body, force) in bodies.iter_mut().zip(forces.iter()) {
-        let acceleration = *force / body.mass  ;
-        body.velocity += acceleration * dt;
-        body.position += body.velocity * dt;
-        
-    }
 }
 
 pub fn update_bodies_tuple(bodies: &mut Vec<(Position, Velocity, Mass)>, forces: Vec<DVec2>, dt: f64) {

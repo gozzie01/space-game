@@ -130,23 +130,3 @@ fn update_bodies_system(
 }
 
 
-
-fn _test() {
-    let start = std::time::Instant::now();
-    let mut bodies = initialize_bodies();
-    let dt = 69000000.0; // Time step
-    for body in bodies.iter() {
-        println!("{:?}", body.position);
-    }
-    for _ in 0..10 {
-        let forces = compute_forces(&bodies);
-        update_bodies(&mut bodies, forces, dt);
-        // Optionally, print or visualize the positions of the bodies
-
-        for body in bodies.iter() {
-            println!("{:?}", body.position);
-        }
-    }
-    let duration = start.elapsed();
-    println!("Time elapsed in computation is: {:?}", duration);
-}
