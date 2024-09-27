@@ -90,7 +90,7 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    commands.spawn(Camera2dBundle::default());
+    intialize_camera(&mut commands);
     commands.insert_resource(CenterOfMass::default());
 
     let bodies = initialize_bodies();
