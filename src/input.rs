@@ -35,7 +35,7 @@ pub fn mouse_system(
                 Mass(5.972e24),
                 MaterialMesh2dBundle {
                     mesh: meshes.add(Circle { radius }).into(),
-                    material: materials.add(ColorMaterial::from(Color::WHITE)),
+                    material: materials.add(Color::srgb(2.0 * radius, 0.0, 7.5)),
                     transform: Transform::from_translation(Vec3::new(d_world_position.x as f32, d_world_position.y as f32, 0.0)),
                     ..default()
                 },
@@ -43,8 +43,6 @@ pub fn mouse_system(
         }
     }
 }
-
-//fn get_mouse_delta(){   }
 
 pub fn scroll_system(
     mut evr_scroll: EventReader<MouseWheel>,
