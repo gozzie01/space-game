@@ -58,7 +58,12 @@ pub fn scroll_system(
             MouseScrollUnit::Line => {
                 match query_camera.get_single_mut() {
                     Ok(mut projection) => {
-                        projection.scale *= ev.y * 0.1;
+                        if ev.y < 0.0 {
+                            projection.scale *= 1.1;
+                        } else {
+                            projection.scale *= 0.9;
+                            
+                        }
                     }
                     Err(e) => {
                         eprintln!("Failed to get camera projection: {:?}", e);
