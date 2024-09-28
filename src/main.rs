@@ -136,7 +136,7 @@ fn setup(
             Mass(body.mass),
             MaterialMesh2dBundle {
                 mesh: meshes.add(Circle { radius }).into(),
-                material: materials.add(Color::srgb(2.0 * radius, 0.0, 7.5)),
+                material: materials.add(Color::srgb(2.0 * radius * radius, 0.0, 7.5)),
                 transform: Transform::from_translation(Vec3::new(body.position.x as f32, body.position.y as f32, 0.0)),
                 ..default()}
         ));

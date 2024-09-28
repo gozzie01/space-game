@@ -12,12 +12,13 @@ use crate::Mass;
 pub fn mouse_system(
     windows: Query<&Window>,
     mut camera_q: Query<(&Camera, &GlobalTransform), With<Camera>>,
-    mut query: Query<&mut Transform, With<Camera>>,
+    mut panning_query: Query<&mut Transform, With<Camera>>,
     mouse_button_input: Res<ButtonInput<MouseButton>>,
     mut evr_motion: EventReader<MouseMotion>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut query_camera: Query<&mut OrthographicProjection, With<Camera>>
 ) {
     let window = windows.single();
     let (camera, camera_global_transform) = camera_q.single();
@@ -35,16 +36,17 @@ pub fn mouse_system(
                 Mass(5.972e24),
                 MaterialMesh2dBundle {
                     mesh: meshes.add(Circle { radius }).into(),
-                    material: materials.add(Color::srgb(2.0 * radius, 0.0, 7.5)),
+                    material: materials.add(Color::srgb(2.0 * radius * radius, 0.0, 7.5)),
                     transform: Transform::from_translation(Vec3::new(d_world_position.x as f32, d_world_position.y as f32, 0.0)),
                     ..default()
                 },
             ));
         }
+
         if mouse_button_input.pressed(MouseButton::Right) {
             for ev in evr_motion.read() {
-                for mut transform in query.iter_mut() {
-                    transform.translation = Vec3::new(transform.translation.x - ev.delta.x, transform.translation.y + ev.delta.y as f32, transform.translation.z);
+                for mut transform in panning_query.iter_mut() {
+                    transform.translation = Vec3::new(transform.translation.x - ev.delta.x * , transform.translation.y + ev.delta.y as f32, transform.translation.z);
                 }
             }
         };
