@@ -56,7 +56,7 @@ pub fn scroll_system(
                 println!("Scroll (line units): vertical: {}, horizontal: {}", ev.y, ev.x);
             }
             MouseScrollUnit::Pixel => {
-                zoom_change(ev.y * 1.5, Query::default());
+                //zoom_change(ev.y * 1.5, );
             }
         }
     }
