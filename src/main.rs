@@ -92,15 +92,15 @@ fn main() {
     .add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin)
 
     .add_plugins(PerfUiPlugin)
-    .add_systems(Startup, setup);
-    app.add_systems(Update, update_bodies_system);
-    app.add_systems(Update, render_bodies_system);
-    app.add_systems(Update, calculate_center_of_mass_system);
-    app.add_systems(Update, update_camera_system);
-    app.add_systems(Update, mouse_system);
-    app.add_systems(Update, scroll_system);
-    app.add_systems(Update, modify_speed_scalar_system);
-    app.run();
+    .add_systems(Startup, setup)
+    .add_systems(Update, update_bodies_system)
+    .add_systems(Update, render_bodies_system)
+    .add_systems(Update, calculate_center_of_mass_system)
+    //.add_systems(Update, update_camera_system)
+    .add_systems(Update, mouse_system)
+    .add_systems(Update, scroll_system)
+    .add_systems(Update, modify_speed_scalar_system)
+    .run();
 }
 
 fn setup(

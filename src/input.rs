@@ -1,12 +1,9 @@
-use crate::camera::*;
-
-use bevy::ecs::query;
 use bevy::prelude::*;
-use bevy::render::camera;
 use bevy::sprite::MaterialMesh2dBundle;
 use bevy::window::Window;
 use bevy::input::mouse::MouseWheel;
 use ultraviolet::DVec2;
+use bevy::input::mouse::MouseMotion;
 
 use crate::Position;
 use crate::Velocity;
@@ -14,18 +11,20 @@ use crate::Mass;
 
 pub fn mouse_system(
     windows: Query<&Window>,
-    camera_q: Query<(&Camera, &GlobalTransform), With<Camera>>,
+    mut camera_q: Query<(&Camera, &GlobalTransform), With<Camera>>,
+    mut query: Query<&mut Transform, With<Camera>>,
     mouse_button_input: Res<ButtonInput<MouseButton>>,
+    mut evr_motion: EventReader<MouseMotion>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let window = windows.single();
-    let (camera, camera_transform) = camera_q.single();
+    let (camera, camera_global_transform) = camera_q.single();
 
     if let Some(world_position) = window
         .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
+        .and_then(|cursor| camera.viewport_to_world_2d(camera_global_transform, cursor))
     {
         let d_world_position = DVec2::new(world_position.x as f64, world_position.y as f64) * 1e9;
         let radius = 2.0;
@@ -42,6 +41,13 @@ pub fn mouse_system(
                 },
             ));
         }
+        if mouse_button_input.pressed(MouseButton::Right) {
+            for ev in evr_motion.read() {
+                for mut transform in query.iter_mut() {
+                    transform.translation = Vec3::new(transform.translation.x - ev.delta.x, transform.translation.y + ev.delta.y as f32, transform.translation.z);
+                }
+            }
+        };
     }
 }
 
