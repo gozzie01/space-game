@@ -50,7 +50,7 @@ pub fn mouse_system(
 
 pub fn scroll_system(
     mut evr_scroll: EventReader<MouseWheel>,
-    mut query_camera: Query<&mut OrthographicProjection, With<MyCameraMarker>>
+    mut query_camera: Query<&mut OrthographicProjection, With<Camera>>
 ) {
     use bevy::input::mouse::MouseScrollUnit;
     for ev in evr_scroll.read() {
