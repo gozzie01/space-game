@@ -51,3 +51,11 @@ pub fn update_bodies(bodies: &mut Vec<(Position, Velocity, Mass)>, forces: Vec<D
         body.0 .0 += body.1 .0 * dt;
     }
 }
+
+pub fn physics_sim(bodies: &mut Vec<(Position, Velocity, Mass)>, dt: f64, precision: u32) {
+    // run 10 iterations of the physics simulation, with a time step of dt/10
+    for _ in 0..precision {
+        let forces = compute_forces(bodies);
+        update_bodies(bodies, forces, dt/precision as f64);
+    }
+}
