@@ -40,3 +40,22 @@ pub fn mouse_system(
         }
     }
 }
+
+pub fn modify_speed_scalar_system(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut speed_scalar: ResMut<crate::SpeedScalar>,
+    mut precision_scalar: ResMut<crate::PrecisionScalar>,
+) {
+    if keyboard_input.just_pressed(KeyCode::ArrowUp) {
+        speed_scalar.0 *= 1.1; // Increase speed
+    }
+    if keyboard_input.just_pressed(KeyCode::ArrowDown) {
+        speed_scalar.0 *= 0.9; // Decrease speed
+    }
+    if keyboard_input.just_pressed(KeyCode::ArrowRight) {
+        precision_scalar.0 *= 2; // Increase precision
+    }
+    if keyboard_input.just_pressed(KeyCode::ArrowLeft) {
+        precision_scalar.0 /= 2; // Decrease precision
+    }
+}

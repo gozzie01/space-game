@@ -32,6 +32,11 @@ impl Default for CenterOfMass {
     }
 }
 
+#[derive(Resource)]
+struct SpeedScalar(f64);
+
+#[derive(Resource)]
+struct PrecisionScalar(u32);
 
 fn initialize_bodies() -> Vec<Body> {
     vec![
@@ -44,8 +49,8 @@ fn initialize_bodies() -> Vec<Body> {
         },
         Body {
             _name: "Sun2".to_string(),
-            position: DVec2::new(5e10, 0.0),
-            velocity: DVec2::new(0.0, 7e4),
+            position: DVec2::new(4e10, 0.0),
+            velocity: DVec2::new(0.0, 8e4),
             radius: 4.0,
             mass: 2.0e30,                          // Solar mass
         },
@@ -93,6 +98,7 @@ fn main() {
     app.add_systems(Update, calculate_center_of_mass_system);
     app.add_systems(Update, update_camera_system);
     app.add_systems(Update, mouse_system);
+    app.add_systems(Update, modify_speed_scalar_system);
     app.run();
 }
 
@@ -103,6 +109,8 @@ fn setup(
 ) {
     intialize_camera(&mut commands);
     commands.insert_resource(CenterOfMass::default());
+    commands.insert_resource(SpeedScalar(1e6)); // Initialize with a default value
+    commands.insert_resource(PrecisionScalar(10)); // Initialize with a default value
 
     let bodies = initialize_bodies();
     
@@ -130,14 +138,15 @@ fn setup(
 fn update_bodies_system(
     mut query: Query<(&mut Position, &mut Velocity, &Mass)>,
     time: Res<Time>,
+    speed_scalar: Res<SpeedScalar>,
+    precision_scalar: Res<PrecisionScalar>,
 ) {
-    let dt = time.delta_seconds_f64();
+    let dt = time.delta_seconds_f64() * speed_scalar.0;
     let mut bodies: Vec<(Position, Velocity, Mass)> = query.iter_mut().map(|(pos, vel, mass)| {
         (Position(pos.0), Velocity(vel.0), Mass(mass.0))
     }).collect();
 
-    let forces = compute_forces(&bodies);
-    update_bodies(&mut bodies, forces, dt * 1000000.0);
+    physics_sim(&mut bodies, dt, precision_scalar.0);
 
     for ((mut pos, mut vel, _), body) in query.iter_mut().zip(bodies.iter()) {
         pos.0 = body.0.0;
