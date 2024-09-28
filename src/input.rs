@@ -36,19 +36,19 @@ pub fn mouse_system(
                 Mass(5.972e24),
                 MaterialMesh2dBundle {
                     mesh: meshes.add(Circle { radius }).into(),
-                    material: materials.add(Color::srgb(2.0 * radius * radius, 0.0, 7.5)),
+                    material: materials.add(Color::srgb(2.0 * radius * radius, 0.0, 15.0)),
                     transform: Transform::from_translation(Vec3::new(d_world_position.x as f32, d_world_position.y as f32, 0.0)),
                     ..default()
                 },
             ));
         }
 
-        if mouse_button_input.pressed(MouseButton::Right) {
+        if mouse_button_input.pressed(MouseButton::Middle) {
             for ev in evr_motion.read() {
                 for mut transform in panning_query.iter_mut() {
                     match camera_scale_query.get_single_mut() {
                         Ok(mut projection) => {
-                            transform.translation = Vec3::new(transform.translation.x - ev.delta.x * projection.scale, transform.translation.y + ev.delta.y * projection.scale as f32, transform.translation.z);
+                            transform.translation = Vec3::new(transform.translation.x - ev.delta.x *  projection.scale * 0.55, transform.translation.y + ev.delta.y * projection.scale * 0.5, transform.translation.z);
                         }
                         Err(e) => {
                             eprintln!("Failed to get camera projection: {:?}", e);
