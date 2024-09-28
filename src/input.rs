@@ -46,7 +46,7 @@ pub fn mouse_system(
         if mouse_button_input.pressed(MouseButton::Right) {
             for ev in evr_motion.read() {
                 for mut transform in panning_query.iter_mut() {
-                    transform.translation = Vec3::new(transform.translation.x - ev.delta.x * , transform.translation.y + ev.delta.y as f32, transform.translation.z);
+                    transform.translation = Vec3::new(transform.translation.x - ev.delta.x, transform.translation.y + ev.delta.y as f32, transform.translation.z);
                 }
             }
         };
