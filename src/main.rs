@@ -58,8 +58,15 @@ fn initialize_bodies() -> Vec<Body> {
             _name: "Earth".to_string(),
             position: DVec2::new(2.496e11, 0.0),   // 1 AU
             velocity: DVec2::new(0.0, 70000.0),    // km/s scaled down
-            radius: 2.0, 
+            radius: 1.0, 
             mass: 5.972e24,                        // Earth mass
+        },
+        Body {
+            _name: "Moon".to_string(),
+            position: DVec2::new(2.49985e11, 0.0),   // 1 AU
+            velocity: DVec2::new(0.0, 71000.0),    // km/s scaled down
+            radius: 0.1, 
+            mass: 7.35e22,                        // Earth mass
         },
         Body {
             _name: "Venus".to_string(),

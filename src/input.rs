@@ -1,8 +1,5 @@
-use crate::camera::*;
 
-use bevy::ecs::query;
 use bevy::prelude::*;
-use bevy::render::camera;
 use bevy::sprite::MaterialMesh2dBundle;
 use bevy::window::Window;
 use bevy::input::mouse::MouseWheel;
