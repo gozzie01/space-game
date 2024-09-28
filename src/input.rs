@@ -12,9 +12,6 @@ use crate::Position;
 use crate::Velocity;
 use crate::Mass;
 
-#[derive(Component)]
-pub struct MyCameraMarker;
-
 pub fn mouse_system(
     windows: Query<&Window>,
     camera_q: Query<(&Camera, &GlobalTransform), With<Camera>>,
