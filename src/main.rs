@@ -82,6 +82,7 @@ fn main() {
     app.add_systems(Update, calculate_center_of_mass_system);
     app.add_systems(Update, update_camera_system);
     app.add_systems(Update, mouse_system);
+    app.add_systems(Update, scroll_system);
     app.run();
 }
 
@@ -115,7 +116,7 @@ fn update_bodies_system(
     time: Res<Time>,
 ) {
     let dt = time.delta_seconds_f64();
-    println!("dt: {}", dt);
+    //println!("dt: {}", dt);
     let mut bodies: Vec<(Position, Velocity, Mass)> = query.iter_mut().map(|(pos, vel, mass)| {
         (Position(pos.0), Velocity(vel.0), Mass(mass.0))
     }).collect();
