@@ -48,39 +48,53 @@ fn initialize_bodies() -> Vec<Body> {
             mass: 2.0e30,                          // Solar mass
         },
         Body {
-            _name: "Sun2".to_string(),
-            position: DVec2::new(4e10, 0.0),
-            velocity: DVec2::new(0.0, 8e4),
-            radius: 4.0,
-            mass: 2.0e30,                          // Solar mass
-        },
-        Body {
             _name: "Earth".to_string(),
-            position: DVec2::new(2.496e11, 0.0),   // 1 AU
-            velocity: DVec2::new(0.0, 70000.0),    // km/s scaled down
+            position: DVec2::new(1.496e11, 0.0),   // 1 AU
+            velocity: DVec2::new(0.0, 29780.0),    // km/s scaled down
             radius: 1.0, 
             mass: 5.972e24,                        // Earth mass
         },
         Body {
             _name: "Moon".to_string(),
-            position: DVec2::new(2.49985e11, 0.0),   // 1 AU
-            velocity: DVec2::new(0.0, 71000.0),    // km/s scaled down
-            radius: 0.1, 
+            position: DVec2::new(1.49985e11, 0.0),   // 1 AU
+            velocity: DVec2::new(0.0, 30802.0),    // km/s scaled down
+            radius: 0.3, 
             mass: 7.35e22,                        // Earth mass
         },
         Body {
             _name: "Venus".to_string(),
-            position: DVec2::new(2.08e11, 0.0),   // venus
-            velocity: DVec2::new(0.0, 75000.0),   // km/s scaled down
-            radius: 2.0, 
+            position: DVec2::new(1.08e11, 0.0),   // venus
+            velocity: DVec2::new(0.0, 35000.0),   // km/s scaled down
+            radius: 1.0, 
             mass: 4.868e24,                        // Venus mass
         },
         Body {
             _name: "Mars".to_string(),
-            position: DVec2::new(3.28e11, 0.0),   // mars
-            velocity: DVec2::new(0.0, 64000.0),   // km/s scaled down
-            radius: 2.0, 
+            position: DVec2::new(2.2794e11, 0.0),   // mars
+            velocity: DVec2::new(0.0, 24000.0),   // km/s scaled down
+            radius: 1.0, 
             mass: 6.42e23,                        // mars mass
+        },
+        Body {
+            _name: "Mercury".to_string(),
+            position: DVec2::new(4.7e10, 0.0),   // mars
+            velocity: DVec2::new(0.0, 47870.0),   // km/s scaled down
+            radius: 1.0, 
+            mass: 3.302e23,                        // mars mass
+        },
+        Body {
+            _name: "Jupiter".to_string(),
+            position: DVec2::new(7.78e11, 0.0),   // mars
+            velocity: DVec2::new(0.0, 13070.0),   // km/s scaled down
+            radius: 3.0, 
+            mass: 1.8987e27,                        // mars mass
+        },
+        Body {
+            _name: "Saturn".to_string(),
+            position: DVec2::new(1.434e12, 0.0),   // mars
+            velocity: DVec2::new(0.0, 9680.0),   // km/s scaled down
+            radius: 3.0, 
+            mass: 5.6851e26,                        // mars mass
         },
     ]
 }
