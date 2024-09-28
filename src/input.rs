@@ -26,7 +26,6 @@ pub fn mouse_system(
         .cursor_position()
         .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
     {
-        //println!("Mouse: {:?}", mouse_button_input.get_pressed().collect::<Vec<_>>());
         let d_world_position = DVec2::new(world_position.x as f64, world_position.y as f64) * 1e9;
         let radius = 2.0;
         if mouse_button_input.just_pressed(MouseButton::Left) {
