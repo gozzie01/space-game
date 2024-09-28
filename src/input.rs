@@ -18,7 +18,7 @@ pub fn mouse_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    mut query_camera: Query<&mut OrthographicProjection, With<Camera>>
+    mut camera_scale_query: Query<&mut OrthographicProjection, With<Camera>>
 ) {
     let window = windows.single();
     let (camera, camera_global_transform) = camera_q.single();
@@ -46,7 +46,14 @@ pub fn mouse_system(
         if mouse_button_input.pressed(MouseButton::Right) {
             for ev in evr_motion.read() {
                 for mut transform in panning_query.iter_mut() {
-                    transform.translation = Vec3::new(transform.translation.x - ev.delta.x, transform.translation.y + ev.delta.y as f32, transform.translation.z);
+                    match camera_scale_query.get_single_mut() {
+                        Ok(mut projection) => {
+                            transform.translation = Vec3::new(transform.translation.x - ev.delta.x * projection.scale, transform.translation.y + ev.delta.y * projection.scale as f32, transform.translation.z);
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to get camera projection: {:?}", e);
+                        }
+                    }
                 }
             }
         };
