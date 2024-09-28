@@ -2,6 +2,7 @@ use crate::camera::*;
 
 use bevy::ecs::query;
 use bevy::prelude::*;
+use bevy::render::camera;
 use bevy::sprite::MaterialMesh2dBundle;
 use bevy::window::Window;
 use bevy::input::mouse::MouseWheel;
@@ -10,6 +11,9 @@ use ultraviolet::DVec2;
 use crate::Position;
 use crate::Velocity;
 use crate::Mass;
+
+#[derive(Component)]
+pub struct MyCameraMarker;
 
 pub fn mouse_system(
     windows: Query<&Window>,
@@ -46,15 +50,23 @@ pub fn mouse_system(
 
 pub fn scroll_system(
     mut evr_scroll: EventReader<MouseWheel>,
+    mut query_camera: Query<&mut OrthographicProjection, With<MyCameraMarker>>
 ) {
     use bevy::input::mouse::MouseScrollUnit;
     for ev in evr_scroll.read() {
         match ev.unit {
             MouseScrollUnit::Line => {
-                println!("Scroll (line units): vertical: {}, horizontal: {}", ev.y, ev.x);
+                match query_camera.get_single_mut() {
+                    Ok(mut projection) => {
+                        projection.scale *= ev.y * 0.1;
+                    }
+                    Err(e) => {
+                        eprintln!("Failed to get camera projection: {:?}", e);
+                    }
+                }
             }
             MouseScrollUnit::Pixel => {
-                //zoom_change(ev.y * 1.5, );
+
             }
         }
     }

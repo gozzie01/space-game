@@ -5,9 +5,6 @@ use bevy::core_pipeline::{
         tonemapping::Tonemapping,
     };
 
-    #[derive(Component)]
-    struct MyCameraMarker;
-
 pub fn update_camera_system(
     center_of_mass: Res<CenterOfMass>,
     mut query: Query<&mut Transform, With<Camera>>,
@@ -39,12 +36,4 @@ pub fn intialize_camera(commands: &mut Commands) {
             composite_mode: BloomCompositeMode::EnergyConserving,
         }
     ));
-}
-
-pub fn zoom_change(
-    mult: f32,
-    mut query_camera: Query<&mut OrthographicProjection, With<MyCameraMarker>>,
-) {
-    let mut projection = query_camera.single_mut();
-    projection.scale *= mult;
 }
