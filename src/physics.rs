@@ -5,7 +5,7 @@ use crate::{CenterOfMass, Mass, Position, Velocity};
 
 #[derive(Clone)]
 pub struct Body {
-    pub _name: String,
+    pub name: String,
     pub position: DVec2,
     pub velocity: DVec2,
     pub radius: f32,
